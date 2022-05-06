@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const { MongoClient, ServerApiVersion } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 require('dotenv').config();
@@ -8,11 +9,19 @@ require('dotenv').config();
 app.use(cors());
 app.use(express.json());
 
+
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.tcjah.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+client.connect(err => {
+    const collection = client.db("test").collection("devices");
+    console.log('connect to db')
+    // perform actions on the collection object
+    client.close();
+});
+
+
 app.get('/', (req, res) => {
     res.send('storage-devices-server')
-})
-app.get('/user', (req, res) => {
-    res.send('faysal')
 })
 
 app.listen(port, () => {
