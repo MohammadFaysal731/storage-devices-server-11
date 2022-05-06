@@ -11,6 +11,9 @@ app.use(express.json());
 app.get('/', (req, res) => {
     res.send('storage-devices-server')
 })
+app.get('/user', (req, res) => {
+    res.send('faysal')
+})
 
 app.listen(port, () => {
     console.log('storage-devices-server runing on ', port)
