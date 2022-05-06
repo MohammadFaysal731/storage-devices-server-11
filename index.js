@@ -17,7 +17,21 @@ async function run() {
 
     try {
         await client.connect();
+        const inventoriesCollections = client.db('Features').collection('products');
         const featuresProductsCollections = client.db('Features').collection('products');
+
+        // inventories api
+        app.get('/inventories', async (req, res) => {
+            const query = {};
+            const cursor = inventoriesCollections.find(query);
+            const inventories = await cursor.limit(6).toArray();
+            res.send(inventories);
+        })
+        app.get('/inventoriesCount', async (req, res) => {
+            const count = await inventoriesCollections.estimatedDocumentCount();
+            res.send({ count });
+        })
+
         // features Products api 
         app.get('/products', async (req, res) => {
             const page = parseInt(req.query.page);
@@ -38,6 +52,7 @@ async function run() {
             const count = await featuresProductsCollections.estimatedDocumentCount();
             res.send({ count })
         })
+
 
     }
     finally {
