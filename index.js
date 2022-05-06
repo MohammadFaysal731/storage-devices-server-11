@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const { response } = require('express');
 const app = express();
 const port = process.env.PORT || 5000;
 require('dotenv').config();
@@ -21,9 +20,17 @@ async function run() {
         const featuresProductsCollections = client.db('Features').collection('products');
         // features Products api 
         app.get('/products', async (req, res) => {
+            const page = parseInt(req.query.page);
+            const size = parseInt(req.query.size);
             const query = {};
             const cursor = featuresProductsCollections.find(query);
-            const products = await cursor.toArray();
+            let products;
+            if (page || size) {
+                products = await cursor.skip(page * size).limit(size).toArray();
+            }
+            else {
+                products = await cursor.toArray();
+            }
             res.send(products);
         })
         // features Products Count api 
@@ -41,7 +48,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get('/', (req, res) => {
-    res.send('storage-devices-server')
+    res.send('StorageDevicesServer')
 })
 
 app.listen(port, () => {
