@@ -20,13 +20,14 @@ async function run() {
         const featuresProductsCollection = client.db('Features').collection('products');
         const inventoryCollection = client.db('Delivered').collection('products')
 
-        // // inventory items
+        // inventory items
         app.get('/inventory', async (req, res) => {
             const query = {};
             const cursor = inventoryCollection.find(query);
             const inventories = await cursor.toArray();
             res.send(inventories);
         })
+        // count inventory
         app.get('/inventoryCount', async (req, res) => {
             const count = await inventoryCollection.estimatedDocumentCount();
             res.send({ count });
@@ -37,6 +38,12 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const inventoryItem = await inventoryCollection.findOne(query);
             res.send(inventoryItem)
+        })
+        // add inventories item 
+        app.post('/inventory', async (req, res) => {
+            const addItem = req.body;
+            const newItem = await inventoryCollection.insertOne(addItem);
+            res.send(newItem);
         })
         // delete manage inventories
         app.delete('/inventory/:id', async (req, res) => {
