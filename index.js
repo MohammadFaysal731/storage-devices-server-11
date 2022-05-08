@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 require('dotenv').config();
@@ -17,19 +17,33 @@ async function run() {
 
     try {
         await client.connect();
-        const inventoriesCollections = client.db('Features').collection('products');
-        const featuresProductsCollections = client.db('Features').collection('products');
+        const featuresProductsCollection = client.db('Features').collection('products');
+        const inventoryCollection = client.db('Delivered').collection('products')
 
-        // inventories api
-        app.get('/inventories', async (req, res) => {
+        // // inventory items
+        app.get('/inventory', async (req, res) => {
             const query = {};
-            const cursor = inventoriesCollections.find(query);
-            const inventories = await cursor.limit(6).toArray();
+            const cursor = inventoryCollection.find(query);
+            const inventories = await cursor.toArray();
             res.send(inventories);
         })
-        app.get('/inventoriesCount', async (req, res) => {
-            const count = await inventoriesCollections.estimatedDocumentCount();
+        app.get('/inventoryCount', async (req, res) => {
+            const count = await inventoryCollection.estimatedDocumentCount();
             res.send({ count });
+        })
+        // // inventory items by id
+        app.get('/inventory/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const inventoryItem = await inventoryCollection.findOne(query);
+            res.send(inventoryItem)
+        })
+        // delete manage inventories
+        app.delete('/inventory/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) };
+            const deleteItem = await inventoryCollection.deleteOne(query);
+            res.send(deleteItem);
         })
 
         // features Products api 
@@ -37,7 +51,7 @@ async function run() {
             const page = parseInt(req.query.page);
             const size = parseInt(req.query.size);
             const query = {};
-            const cursor = featuresProductsCollections.find(query);
+            const cursor = featuresProductsCollection.find(query);
             let products;
             if (page || size) {
                 products = await cursor.skip(page * size).limit(size).toArray();
@@ -47,9 +61,10 @@ async function run() {
             }
             res.send(products);
         })
+
         // features Products Count api 
         app.get('/productsCount', async (req, res) => {
-            const count = await featuresProductsCollections.estimatedDocumentCount();
+            const count = await featuresProductsCollection.estimatedDocumentCount();
             res.send({ count })
         })
 
